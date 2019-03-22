@@ -1,4 +1,7 @@
-import pygame
+import pygame , sys
+import time
+import os
+clock = pygame.time.Clock()
 
 class grid():
     def __init__(self):
@@ -6,6 +9,7 @@ class grid():
         self.y = 0
         self.Bsize = 50
         self.color = (0,244,0)
+        self.A = True
 
         row0 = []
         for x in range(10):
@@ -38,6 +42,7 @@ class grid():
         for x in range(10):
             row9.append(0)
         self.TFgrid = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9]
+        self.curs = 5
     def drawGrid(self, win):
         h_grid = 10
         w_grid = 10
@@ -50,9 +55,18 @@ class grid():
     def drawSqr(self,win):
         rect = pygame.Rect(self.x * (self.Bsize + 1), self.y * (self.Bsize + 1), self.Bsize, self.Bsize)
         pygame.draw.rect(win, self.color, rect)
+        self.NOToccupy(self.x, self.y)
 
+    def CURSimage(self,win,sprite,inX,inY):
+        sprite = pygame.sprite.Sprite()  # create sprite
+        sprite.image = pygame.image.load("C:\\Users\\HP Owner\\Downloads\\Cccursor.png").convert_alpha()
+        sprite.rect = sprite.image.get_rect()  # use image extent values
+        sprite.rect = [inX * (50 + 1), inY * (50 + 1)]  # put the ball in the top left corner
+        win.blit(sprite.image, sprite.rect)
+        #pygame.display.update()
 
     def moveCursor(self):
+        self.curs = 5
         keys = pygame.key.get_pressed()
         if keys[pygame.K_RIGHT] and self.x < 9:
             self.x += 1
@@ -66,17 +80,10 @@ class grid():
         if keys[pygame.K_DOWN] and self.y < 9:
             self.y += 1
 
-    def drawCursor(self,win):
-        TopRect = pygame.Rect(self.x * (self.Bsize + 1), self.y * (self.Bsize + 1), self.Bsize, 2)
-        LeftRect= pygame.Rect(self.x * (self.Bsize + 1), self.y * (self.Bsize + 1), 2, self.Bsize)
-        BottomRect = pygame.Rect(self.x * (self.Bsize + 1), self.y * (self.Bsize + 1)+(self.Bsize-2), self.Bsize, 2)
-        RightRect = pygame.Rect(self.x * (self.Bsize + 1)+(self.Bsize-2), self.y * (self.Bsize + 1), 2, self.Bsize)
-
-        self.moveCursor()
-        pygame.draw.rect(win, (244, 0, 0), TopRect)
-        pygame.draw.rect(win, (244, 0, 0), LeftRect)
-        pygame.draw.rect(win, (244, 0, 0), BottomRect)
-        pygame.draw.rect(win, (244, 0, 0), RightRect)
+    def drawCursor(self,win,voltz):
+        if (self.IsNotOccupied(self.x, self.y) or self.curs == 5):
+            pic = "C:\\Users\\HP Owner\\Downloads\\Cccursor.png"
+            self.CURSimage(win,pic,self.x,self.y)
 
     def occupy(self, inputX, inputY):
         self.TFgrid[inputY][inputX] = 1
@@ -90,14 +97,43 @@ class grid():
     def IsNotOccupied(self, inputX, inputY):
         return not self.TFgrid[inputY][inputX]
 
-    def menu(self, win,voltz,Grid):
+
+
+
+    def guide(self, inX, inY, win,voltz, Grid):
+        # 0 - blank tile, 1 - uptile, 2 - sidetile, 3 - startsqr, 4 - endsqr
+        if self.TFgrid[inY][inX] == 0:
+            rect = pygame.Rect(inX * (self.Bsize + 1), inY * (self.Bsize + 1), self.Bsize, self.Bsize)
+            pygame.draw.rect(win, self.color, rect)
+        elif self.TFgrid[inY][inX] == 1:
+            rect = pygame.Rect(inX * (self.Bsize + 1), inY * (self.Bsize + 1), self.Bsize, self.Bsize)
+            pygame.draw.rect(win, self.color, rect)
+            voltz.SIDEwire(win,inX,inY,Grid)
+        elif self.TFgrid[inY][inX] == 2:
+            rect = pygame.Rect(inX * (self.Bsize + 1), inY * (self.Bsize + 1), self.Bsize, self.Bsize)
+            pygame.draw.rect(win, self.color, rect)
+            voltz.UPwire(win,inX,inY,Grid)
+        elif self.TFgrid[inY][inX] == 3:
+            voltz.startSqr(win,Grid)
+        elif self.TFgrid[inY][inX] == 4:
+            voltz.endSqr(win,Grid)
+
+
+
+
+    def menu(self, win, voltz, Grid):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_u]:
-            voltz.UPwire(win,self.x,self.y,Grid)
+            self.A = False
+            voltz.UPwire(win, self.x, self.y, Grid)
+            self.A = True
         if keys[pygame.K_s]:
-            voltz.SIDEwire(win,self.x, self.y,Grid)
+            self.A = False
+            voltz.SIDEwire(win, self.x, self.y, Grid)
+            self.A = True
         if keys[pygame.K_r]:
             self.drawSqr(win)
+
 
 class Voltage():
     def __init__(self):
@@ -108,6 +144,12 @@ class Voltage():
         self.xE = 6
         self.yE = 7
         self.Bsize = 50
+        b = pygame.sprite.Sprite()  # create sprite
+        b.image = pygame.image.load("C:\\Users\\HP Owner\\Downloads\\Pipe.png").convert_alpha()
+        self.Spipe = b
+        a = pygame.sprite.Sprite()  # create sprite
+        a.image = pygame.image.load("C:\\Users\\HP Owner\\Downloads\\Pipe.png").convert_alpha()
+        self.Upipe = a
 
     def startSqr(self,win,Grid):
         Font = pygame.font.SysFont('Comic Sans MS', 30)
@@ -130,16 +172,37 @@ class Voltage():
 
     def UPwire(self,win,inX,inY,Grid):
         if(Grid.IsNotOccupied(inX,inY)):
-            rect = pygame.Rect(inX * (self.Bsize + 1), inY * (self.Bsize + 1) + (.25) * self.Bsize, self.Bsize, (.5) * self.Bsize)
-            pygame.draw.rect(win, (244, 0, 0), rect)
+            self.curs = 0
+            pic = "C:\\Users\\HP Owner\\Downloads\\Pipe2.png"
+            Grid.drawSqr(win)
+            self.PICimage(win,self.Upipe,inX,inY)
             Grid.occupy(inX, inY)
+
+            
 
 
     def SIDEwire(self,win,inX,inY,Grid):
         if (Grid.IsNotOccupied(inX, inY)):
-            rect = pygame.Rect(inX * (self.Bsize + 1)+(.25) * self.Bsize, inY * (self.Bsize + 1), (.5) * self.Bsize,self.Bsize)
-            pygame.draw.rect(win, (244, 0, 0), rect)
+            self.curs = 0
+            #print(os.getcwd())
+            pic = "C:\\Users\\HP Owner\\Downloads\\Pipe.png"
+            Grid.drawSqr(win)
+            self.PICimage(win,self.Spipe,inX,inY)
             Grid.occupy(inX, inY)
+
+
+
+    def PICimage(self,win,sprite,inX,inY):
+
+        sprite.rect = sprite.image.get_rect()  # use image extent values
+        sprite.rect = [inX * (50 + 1), inY * (50 + 1)]  # put the ball in the top left corner
+        win.blit(sprite.image, sprite.rect)
+        #pygame.display.update()
+
+
+
+
+
 
 
 
