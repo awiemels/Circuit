@@ -4,26 +4,27 @@ from classes import grid, Voltage
 
 pygame.init()
 pygame.font.init()
-win = pygame.display.set_mode((510,510))
+win = pygame.display.set_mode((710,510))
 pygame.display.flip()
-
+# 510, 510
 voltz = Voltage()
 Grid = grid()
 
 
 def redraw():
-    Grid.drawGrid(win)
+    Grid.drawGrid(win,voltz,Grid)
     Grid.drawCursor(win,voltz)
     pygame.display.update()
     voltz.startSqr(win, Grid)
     voltz.endSqr(win, Grid)
     Grid.menu(win, voltz, Grid)
+    Grid.drawMenu(win,voltz,Grid)
     pygame.display.update()
 
 
 def playGame():
     win.fill((0, 0, 0))
-    Grid.drawGrid(win)
+    Grid.drawGrid(win,voltz,Grid)
     running = True
     while running:
         for event in pygame.event.get():
