@@ -9,7 +9,9 @@ class grid():
         self.y = 0
         self.Bsize = 50
         self.color = (0,244,0)
-
+        #TFgrid = []
+        #for i in range(10):
+            #TFGrid.append([0 for j in range(10)])
         row0 = []
         for x in range(10):
             row0.append(0)
@@ -114,6 +116,8 @@ class grid():
 
         if keys[pygame.K_r]:
             self.drawSqr(win)
+        if keys[pygame.K_e]:
+            voltz.Path(Grid)
 
 
     def drawMenu(self, win,voltz, Grid):
@@ -126,7 +130,7 @@ class grid():
 
         button = pygame.Rect(540, 200, 70, 50)
         pygame.draw.rect(win, (244, 244, 0), button)
-        text2 = "Pipe"
+        text2 = "Wire"
         textsurf = Font.render(text2, False, (0, 0, 0))
         win.blit(textsurf, (545, 200))
 
@@ -136,12 +140,23 @@ class grid():
         textsurf = Font.render(text3, False, (0, 0, 0))
         win.blit(textsurf, (545, 300))
 
+        button3 = pygame.Rect(540, 400, 130, 50)
+        pygame.draw.rect(win, (244, 244, 0), button3)
+        text4 = "Resistor"
+        textsurf = Font.render(text4, False, (0, 0, 0))
+        win.blit(textsurf, (545, 400))
+
         mouse = pygame.mouse.get_pos()
         m1, m2, m3 = pygame.mouse.get_pressed()
         #print(mouse)
         if 540+70 > mouse[0] > 540 and 200 + 50 > mouse[1] > 200 and m1 == True:
             voltz.UPwire(win, self.x, self.y, Grid)
 
+        if 540+130 > mouse[0] > 540 and 300 + 50 > mouse[1] > 300 and m1 == True:
+            voltz.v1 = voltz.v1 + 2
+
+        if 540+130 > mouse[0] > 540 and 400 + 50 > mouse[1] > 400 and m1 == True:
+            voltz.v1 = voltz.v1 - 1
 
 
 class Voltage():
@@ -202,22 +217,41 @@ class Voltage():
         win.blit(sprite.image, sprite.rect)
         #pygame.display.update()
 
+    def winCon(self,Grid):
+        return self.v1 == self.v2 and self.Path(Grid)
 
     def Path(self,Grid):
         a = self.xB
-        b = self.xB
-
-        while a != self.xE and b != self.yB:
-            if Grid.IsOccupied(a+1,b) > 0:
+        b = self.yB
+        count = 0
+        while a != self.xE and b != self.yE:
+            repeat = False
+            if Grid.IsOccupied(a+1, b) > 0 and repeat == False:
                 a = a+1
-            elif Grid.IsOccupied(a-1,b) > 0:
-                a = a-1
-            elif Grid.IsOccupied(a,b-1) > 0:
-                b = b-1
-            elif Grid.IsOccupied(a,b+1) > 0:
+                repeat = True
+            elif Grid.IsOccupied(a, b+1) > 0 and repeat == False:
                 b = b+1
+                repeat = True
+            elif Grid.IsOccupied(a, b-1) > 0 and repeat == False:
+                b = b-1
+                repeat = True
+            elif Grid.IsOccupied(a-1, b) > 0 and repeat == False:
+                a = a-1
+                repeat = True
+            elif count == 25:
+                break
+            else:
+                count+=1
 
 
+        return True
+''' 
+win condition
+battery and resistors
+fix grid
+clean up code
+sprite work -> piskel character tutorial
+'''
 
 
 

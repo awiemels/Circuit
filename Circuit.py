@@ -35,6 +35,9 @@ def playGame():
             else:
                 Grid.moveCursor()
                 redraw()
+                if voltz.winCon(Grid) == True:
+                    print("Thank you for playing")
+                    running = False
 
 
 def game_intro():
