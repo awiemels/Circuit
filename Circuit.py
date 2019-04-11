@@ -1,30 +1,30 @@
 import pygame
 import time
-from classes import grid, Voltage
+from classes import grid
 
 pygame.init()
 pygame.font.init()
 win = pygame.display.set_mode((710,510))
 pygame.display.flip()
 # 510, 510
-voltz = Voltage()
+
 Grid = grid()
 
 
 def redraw():
-    Grid.drawGrid(win,voltz,Grid)
-    Grid.drawCursor(win,voltz)
+    Grid.drawGrid(win)
+    Grid.drawCursor(win)
     pygame.display.update()
-    voltz.startSqr(win, Grid)
-    voltz.endSqr(win, Grid)
-    Grid.menu(win, voltz, Grid)
-    Grid.drawMenu(win,voltz,Grid)
+    Grid.startSqr(win)
+    Grid.endSqr(win)
+    Grid.menu(win)
+    Grid.drawMenu(win)
     pygame.display.update()
 
 
 def playGame():
     win.fill((0, 0, 0))
-    Grid.drawGrid(win,voltz,Grid)
+    Grid.drawGrid(win)
     running = True
     while running:
         for event in pygame.event.get():
@@ -35,9 +35,9 @@ def playGame():
             else:
                 Grid.moveCursor()
                 redraw()
-                if voltz.winCon(Grid) == True:
-                    print("Thank you for playing")
+                if Grid.run == False:
                     running = False
+
 
 
 def game_intro():

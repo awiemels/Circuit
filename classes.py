@@ -9,51 +9,58 @@ class grid():
         self.y = 0
         self.Bsize = 50
         self.color = (0,244,0)
-        #TFgrid = []
-        #for i in range(10):
-            #TFGrid.append([0 for j in range(10)])
-        row0 = []
-        for x in range(10):
-            row0.append(0)
-        row1 = []
-        for x in range(10):
-            row1.append(0)
-        row2 = []
-        for x in range(10):
-            row2.append(0)
-        row3 = []
-        for x in range(10):
-            row3.append(0)
-        row4 = []
-        for x in range(10):
-            row4.append(0)
-        row5 = []
-        for x in range(10):
-            row5.append(0)
-        row6 = []
-        for x in range(10):
-            row6.append(0)
-        row7 = []
-        for x in range(10):
-            row7.append(0)
-        row8 = []
-        for x in range(10):
-            row8.append(0)
-        row9 = []
-        for x in range(10):
-            row9.append(0)
-        self.TFgrid = [row0, row1, row2, row3, row4, row5, row6, row7, row8, row9]
-        self.curs = 5
-    def drawGrid(self, win,voltz,Grid):
+        self.TFgrid = []
+        for i in range(10):
+            self.TFgrid.append([0 for j in range(10)])
+        self.run = True
+
+        self.v1 = 5
+        self.v2 = 10
+        self.xB = 0
+        self.yB = 0
+        self.xE = 6
+        self.yE = 7
+        b = pygame.sprite.Sprite()  # create sprite
+        b.image = pygame.image.load("C:\\Users\\HP Owner\\Downloads\\SidePipe.png").convert_alpha()
+        self.Spipe = b
+        a = pygame.sprite.Sprite()  # create sprite
+        a.image = pygame.image.load("C:\\Users\\HP Owner\\Downloads\\SidePipe.png").convert_alpha()
+        self.Upipe = a
+        c = pygame.sprite.Sprite()  # create sprite
+        c.image = pygame.image.load("C:\\Users\\HP Owner\\Downloads\\battery.png").convert_alpha()
+        self.battery = c
+        d = pygame.sprite.Sprite()  # create sprite
+        d.image = pygame.image.load("C:\\Users\\HP Owner\\Downloads\\resistor.png").convert_alpha()
+        self.resistor = d
+
+    def drawResistor(self, win, inX, inY):
+        if (self.IsOccupied(inX, inY) == 0 or self.IsOccupied(inX, inY) == 5):
+            self.PICimage(win,self.resistor, inX, inY)
+            if self.IsOccupied(inX, inY) == 0:
+                self.v1 = self.v1 - 1
+            self.occupy(inX, inY,5)
+
+    def drawBattery(self, win, inX, inY):
+        if (self.IsOccupied(inX, inY) == 0 or self.IsOccupied(inX, inY) == 6):
+            self.PICimage(win,self.battery, inX, inY)
+            if self.IsOccupied(inX, inY) == 0:
+                self.v1 = self.v1 + 2
+            self.occupy(inX, inY,6)
+
+    def drawGrid(self, win):
         h_grid = 10
         w_grid = 10
         for y in range(h_grid):
             for x in range(w_grid):
-                self.guide(x,y,win,voltz,Grid)
+                self.guide(x,y,win)
 
     def drawSqr(self,win):
         rect = pygame.Rect(self.x * (self.Bsize + 1), self.y * (self.Bsize + 1), self.Bsize, self.Bsize)
         pygame.draw.rect(win, self.color, rect)
+        if self.IsOccupied(self.x,self.y) == 5:
+            self.v1 = self.v1 + 1
+        elif self.IsOccupied(self.x,self.y) == 6:
+            self.v1 = self.v1 - 2
         self.NOToccupy(self.x, self.y)
 
     def CURSimage(self,win,sprite,inX,inY):
@@ -62,7 +69,7 @@ class grid():
         sprite.rect = sprite.image.get_rect()  # use image extent values
         sprite.rect = [inX * (50 + 1), inY * (50 + 1)]  # put the ball in the top left corner
         win.blit(sprite.image, sprite.rect)
-        #pygame.display.update()
+
 
     def moveCursor(self):
         self.curs = 5
@@ -79,7 +86,7 @@ class grid():
         if keys[pygame.K_DOWN] and self.y < 9:
             self.y += 1
 
-    def drawCursor(self,win,voltz):
+    def drawCursor(self,win):
         pic = "C:\\Users\\HP Owner\\Downloads\\Cccursor.png"
         self.CURSimage(win,pic,self.x,self.y)
 
@@ -92,35 +99,41 @@ class grid():
     def IsOccupied(self, inputX, inputY):
         return self.TFgrid[inputY][inputX]
 
-    def guide(self, inX, inY, win,voltz, Grid):
-        # 0 - blank tile, 1 - uptile, 2 - sidetile, 3 - startsqr, 4 - endsqr
+    def guide(self, inX, inY, win):
+        # 0 - blank tile, 1 - uptile, 2 - sidetile, 3 - startsqr, 4 - endsqr 5 - resistor, 6 - battery
         if self.TFgrid[inY][inX] == 0:
             rect = pygame.Rect(inX * (self.Bsize + 1), inY * (self.Bsize + 1), self.Bsize, self.Bsize)
             pygame.draw.rect(win, self.color, rect)
         elif self.TFgrid[inY][inX] == 1:
-            voltz.SIDEwire(win,inX,inY,Grid)
+            self.SIDEwire(win,inX,inY)
         elif self.TFgrid[inY][inX] == 2:
-            voltz.UPwire(win,inX,inY,Grid)
+            self.UPwire(win,inX,inY)
         elif self.TFgrid[inY][inX] == 3:
-            voltz.startSqr(win,Grid)
+            self.startSqr(win)
         elif self.TFgrid[inY][inX] == 4:
-            voltz.endSqr(win,Grid)
+            self.endSqr(win)
+        elif self.TFgrid[inY][inX] == 5:
+            self.drawResistor(win,inX, inY)
+        elif self.TFgrid[inY][inX] == 6:
+            self.drawBattery(win,inX, inY)
 
-    def menu(self, win, voltz, Grid):
+
+
+    def menu(self, win):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_u]:
-            voltz.UPwire(win, self.x, self.y, Grid)
+            self.UPwire(win, self.x, self.y)
 
         if keys[pygame.K_s]:
-            voltz.SIDEwire(win, self.x, self.y, Grid)
+            self.SIDEwire(win, self.x, self.y)
 
         if keys[pygame.K_r]:
             self.drawSqr(win)
         if keys[pygame.K_e]:
-            voltz.Path(Grid)
+            self.Path()
 
 
-    def drawMenu(self, win,voltz, Grid):
+    def drawMenu(self, win):
         Font = pygame.font.SysFont('Comic Sans MS', 30)
         MENU = pygame.Rect(515, 5, 190, 500)
         pygame.draw.rect(win, (244, 0, 0), MENU)
@@ -128,128 +141,128 @@ class grid():
         textsurf2 = Font.render(text3, False, (0, 0, 0))
         win.blit(textsurf2, (570, 10))
 
-        button = pygame.Rect(540, 200, 70, 50)
+        button = pygame.Rect(540, 55, 130, 50)
         pygame.draw.rect(win, (244, 244, 0), button)
         text2 = "Wire"
         textsurf = Font.render(text2, False, (0, 0, 0))
-        win.blit(textsurf, (545, 200))
+        win.blit(textsurf, (545, 55))
 
-        button2 = pygame.Rect(540, 300, 130, 50)
+        button2 = pygame.Rect(540, 155, 130, 50)
         pygame.draw.rect(win, (244, 244, 0), button2)
         text3 = "Battery"
         textsurf = Font.render(text3, False, (0, 0, 0))
-        win.blit(textsurf, (545, 300))
+        win.blit(textsurf, (545, 155))
 
-        button3 = pygame.Rect(540, 400, 130, 50)
+        button3 = pygame.Rect(540, 255, 130, 50)
         pygame.draw.rect(win, (244, 244, 0), button3)
         text4 = "Resistor"
         textsurf = Font.render(text4, False, (0, 0, 0))
-        win.blit(textsurf, (545, 400))
+        win.blit(textsurf, (545, 255))
+
+        button4 = pygame.Rect(540, 355, 130, 50)
+        pygame.draw.rect(win, (244, 244, 0), button4)
+        text4 = "Power"
+        textsurf = Font.render(text4, False, (0, 0, 0))
+        win.blit(textsurf, (545, 355))
+
+        button5 = pygame.Rect(540, 425, 130, 50)
+        pygame.draw.rect(win, (244, 244, 0), button5)
+        text4 = "undo"
+        textsurf = Font.render(text4, False, (0, 0, 0))
+        win.blit(textsurf, (545, 425))
 
         mouse = pygame.mouse.get_pos()
         m1, m2, m3 = pygame.mouse.get_pressed()
-        #print(mouse)
-        if 540+70 > mouse[0] > 540 and 200 + 50 > mouse[1] > 200 and m1 == True:
-            voltz.UPwire(win, self.x, self.y, Grid)
 
-        if 540+130 > mouse[0] > 540 and 300 + 50 > mouse[1] > 300 and m1 == True:
-            voltz.v1 = voltz.v1 + 2
+        if 540+130 > mouse[0] > 540 and 55 + 50 > mouse[1] > 55 and m1 == True:
+            self.UPwire(win, self.x, self.y)
 
-        if 540+130 > mouse[0] > 540 and 400 + 50 > mouse[1] > 400 and m1 == True:
-            voltz.v1 = voltz.v1 - 1
+        if 540+130 > mouse[0] > 540 and 155 + 50 > mouse[1] > 155 and m1 == True:
+            self.drawBattery(win, self.x, self.y)
+
+        if 540+130 > mouse[0] > 540 and 255 + 50 > mouse[1] > 255 and m1 == True:
+            self.drawResistor(win, self.x,self.y)
+
+        if 540+130 > mouse[0] > 540 and 425 + 50 > mouse[1] > 425 and m1 == True:
+            self.drawSqr(win)
+
+        if 540+130 > mouse[0] > 540 and 355 + 50 > mouse[1] > 355 and m1 == True:
+            if self.winCon() == True:
+                print("Thank you for playing")
+                self.run = False
 
 
-class Voltage():
-    def __init__(self):
-        self.v1 = 5
-        self.v2 = 10
-        self.xB = 0
-        self.yB = 0
-        self.xE = 6
-        self.yE = 7
-        self.Bsize = 50
-        b = pygame.sprite.Sprite()  # create sprite
-        b.image = pygame.image.load("C:\\Users\\HP Owner\\Downloads\\SidePipe.png").convert_alpha()
-        self.Spipe = b
-        a = pygame.sprite.Sprite()  # create sprite
-        a.image = pygame.image.load("C:\\Users\\HP Owner\\Downloads\\SidePipe.png").convert_alpha()
-        self.Upipe = a
-
-    def startSqr(self,win,Grid):
+    def startSqr(self,win):
         Font = pygame.font.SysFont('Comic Sans MS', 30)
         rect = pygame.Rect(self.xB * (self.Bsize + 1), self.yB * (self.Bsize + 1), self.Bsize, self.Bsize)
         pygame.draw.rect(win, (139, 136, 120), rect)
-        Grid.occupy(self.xB, self.yB,3)
+        self.occupy(self.xB, self.yB,3)
         txtV1 = str(self.v1)
         textsurf2 = Font.render(txtV1, False, (0, 0, 0))
         win.blit(textsurf2, (self.xB * (self.Bsize + 1) + 10, self.yB * (self.Bsize + 1) + 5))
 
-    def endSqr(self,win,Grid):
-
+    def endSqr(self,win):
         Font = pygame.font.SysFont('Comic Sans MS', 30)
         rect = pygame.Rect(self.xE * (self.Bsize + 1), self.yE * (self.Bsize + 1), self.Bsize, self.Bsize)
         pygame.draw.rect(win, (139, 136, 120), rect)
-        Grid.occupy(self.xE, self.yE,4)
+        self.occupy(self.xE, self.yE,4)
         txtV2 = str(self.v2)
         textsurf2 = Font.render(txtV2, False, (0, 0, 0))
         win.blit(textsurf2, (self.xE * (self.Bsize + 1) + 10, self.yE * (self.Bsize + 1) + 5))
 
-    def UPwire(self,win,inX,inY,Grid):
-        if(Grid.IsOccupied(inX,inY) == 0 or Grid.IsOccupied(inX, inY) == 2):
-            self.curs = 0
-            pic = "C:\\Users\\HP Owner\\Downloads\\Pipe2.png"
-            #Grid.drawSqr(win)
+    def UPwire(self,win,inX,inY):
+        if(self.IsOccupied(inX,inY) == 0 or self.IsOccupied(inX, inY) == 2):
             self.PICimage(win,self.Upipe,inX,inY)
-            Grid.occupy(inX, inY,2)
+            self.occupy(inX, inY,2)
 
-    def SIDEwire(self,win,inX,inY,Grid):
-        if (Grid.IsOccupied(inX, inY) == 0 or Grid.IsOccupied(inX, inY) == 1):
-            self.curs = 0
-            #print(os.getcwd())
-            pic = "C:\\Users\\HP Owner\\Downloads\\SidePipe.png"
-            #Grid.drawSqr(win)
+    def SIDEwire(self,win,inX,inY):
+        if (self.IsOccupied(inX, inY) == 0 or self.IsOccupied(inX, inY) == 1):
             self.PICimage(win,self.Spipe,inX,inY)
-            Grid.occupy(inX, inY,1)
+            self.occupy(inX, inY,1)
 
     def PICimage(self,win,sprite,inX,inY):
         sprite.rect = sprite.image.get_rect()  # use image extent values
         sprite.rect = [inX * (50 + 1), inY * (50 + 1)]  # put the ball in the top left corner
         win.blit(sprite.image, sprite.rect)
-        #pygame.display.update()
 
-    def winCon(self,Grid):
-        return self.v1 == self.v2 and self.Path(Grid)
 
-    def Path(self,Grid):
+    def winCon(self):
+        return self.v1 == self.v2 and self.Path()
+
+    def Path(self):
         a = self.xB
         b = self.yB
         count = 0
         while a != self.xE and b != self.yE:
-            repeat = False
-            if Grid.IsOccupied(a+1, b) > 0 and repeat == False:
+            if self.IsOccupied(a+1, b) > 0:
                 a = a+1
-                repeat = True
-            elif Grid.IsOccupied(a, b+1) > 0 and repeat == False:
+            elif self.IsOccupied(a, b+1) > 0:
                 b = b+1
-                repeat = True
-            elif Grid.IsOccupied(a, b-1) > 0 and repeat == False:
+            elif self.IsOccupied(a, b-1) > 0:
                 b = b-1
-                repeat = True
-            elif Grid.IsOccupied(a-1, b) > 0 and repeat == False:
+            elif self.IsOccupied(a-1, b) > 0:
                 a = a-1
-                repeat = True
             elif count == 25:
-                break
+                return False
             else:
                 count+=1
-
-
         return True
+
+class draw():
+    def __init__(self):
+        self.pic = 5
+
+    def math(self):
+        return self.pic +5
+
+
 ''' 
-win condition
-battery and resistors
-fix grid
-clean up code
+Multiple Levels
+WIn message
+Fix wire Drawing
+    Automatic fixing tiling up down turn tiles
+    Limits on placing wires/Batteries/Resistors
+DFS algorithm 
 sprite work -> piskel character tutorial
 '''
 
